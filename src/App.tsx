@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useState, useLayoutEffect } from "react";
 import { Layout, Slider, Col, Row } from "antd";
 import { Content } from "antd/es/layout/layout";
 import { Layer, Rect, Stage } from "react-konva";
@@ -47,6 +47,32 @@ function App() {
     });
   };
 
+  const useWindowSize = (): number[] => {
+    const [size, setSize] = useState([0, 0]);
+    useLayoutEffect(() => {
+      const updateSize = (): void => {
+        setSize([window.innerWidth, window.innerHeight]);
+      };
+  
+      window.addEventListener("resize", updateSize);
+      updateSize();
+  
+      return () => window.removeEventListener("resize", updateSize);
+    }, []);
+    return size;
+  };
+
+  const [width, height] = useWindowSize();
+
+  const [cellSize, setCellSize] = useState(0);
+  useLayoutEffect(() => {
+    if (width < height) {
+      setCellSize(width / (cellNum + 1));
+    } else {
+      setCellSize(height / (cellNum + 1));
+    }
+  }, [width, height, cellNum]);
+
   const rows = [];
   for (let i = 0; i < cellNum; i++) {
     for (let j = 0; j < cellNum; j++) {
@@ -55,10 +81,10 @@ function App() {
       rows.push(
         <Rect
           fill={colorStyle}
-          x={50 + 100 * i}
-          y={50 + 100 * j}
-          width={100}
-          height={100}
+          x={cellSize / 2 + cellSize * i}
+          y={cellSize / 2 + cellSize * j}
+          width={cellSize}
+          height={cellSize}
           key={`${i}-${j}`}
         />
       );
@@ -107,7 +133,10 @@ function App() {
         <div
           style={{ display: "flex", justifyContent: "center", width: "100%" }}
         >
-          <Stage width={100 + 100 * cellNum} height={100 + 100 * cellNum}>
+          <Stage
+            width={cellSize * (cellNum + 1)}
+            height={cellSize * (cellNum + 1)}
+          >
             <Layer>{rows}</Layer>
           </Stage>
         </div>
