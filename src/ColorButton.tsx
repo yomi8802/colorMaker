@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Button, Modal } from "antd";
+import { Modal } from "antd";
+import { Stage, Layer, Rect } from "react-konva";
 import { Rgb } from "./App";
 import ColorPicker from "./ColorPicker";
 import { HSV2RGB } from "./ColorCalculation";
@@ -7,7 +8,8 @@ import { HSV2RGB } from "./ColorCalculation";
 type Prop = {
   handleColorChange: (i: number, color: Rgb) => void;
   cellNum: number;
-  colorStyle: React.CSSProperties;
+  cellSize: number;
+  color: Rgb;
 };
 
 const ColorButton = (props: Prop) => {
@@ -18,7 +20,7 @@ const ColorButton = (props: Prop) => {
   const { handleColorChange, cellNum } = props;
 
   const showModal = () => {
-    setTempColorHue(colorHue); //仮数値を現状の値に初期化。スライダー初期化用。
+    setTempColorHue(colorHue); //仮数値を現状の値に初期化. スライダー初期化用.
     setIsModalOpen(true);
   };
   const handleOk = () => {
@@ -31,7 +33,7 @@ const ColorButton = (props: Prop) => {
   };
 
   useEffect(() => {
-    handleColorChange(cellNum, HSV2RGB({h: colorHue, s: 1, v: 1}));
+    handleColorChange(cellNum, HSV2RGB({ h: colorHue, s: 1, v: 1 }));
   }, [colorHue, handleColorChange, cellNum]);
 
   //ColorPickerが操作するための関数
@@ -39,12 +41,29 @@ const ColorButton = (props: Prop) => {
     setTempColorHue(newValue);
   };
 
+  const handleClick = () => {
+    showModal();
+  };
+
+  const colorStyle: string = `rgb(${props.color.r}, ${props.color.g}, ${props.color.b})`;
+
   return (
     <div>
-      <Button type="primary" onClick={showModal} style={props.colorStyle}>
-        基底色
-      </Button>
-      <h3>Hue: {colorHue}</h3>
+      <Stage width={50} height={50}>
+        <Layer>
+          <Rect
+            x={0}
+            y={0}
+            width={props.cellSize}
+            height={props.cellSize}
+            fill={colorStyle}
+            stroke={'black'}       // 縁取りの色を設定
+            strokeWidth={2}
+            onClick={handleClick}
+            onTouchStart={handleClick} // モバイルデバイスのためにタッチイベントも追加
+          />
+        </Layer>
+      </Stage>
 
       <Modal
         title="ColorPicker"

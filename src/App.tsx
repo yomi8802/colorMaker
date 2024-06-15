@@ -4,6 +4,8 @@ import { Content } from "antd/es/layout/layout";
 import { Layer, Rect, Stage } from "react-konva";
 import ColorButton from "./ColorButton";
 import { MixRGB } from "./ColorCalculation";
+import { CA } from "./CA.tsx";
+import useWindowSize from "./hooks";
 
 export type Rgb = {
   r: number;
@@ -47,29 +49,14 @@ function App() {
     });
   };
 
-  const useWindowSize = (): number[] => {
-    const [size, setSize] = useState([0, 0]);
-    useLayoutEffect(() => {
-      const updateSize = (): void => {
-        setSize([window.innerWidth, window.innerHeight]);
-      };
-  
-      window.addEventListener("resize", updateSize);
-      updateSize();
-  
-      return () => window.removeEventListener("resize", updateSize);
-    }, []);
-    return size;
-  };
-
   const [width, height] = useWindowSize();
 
   const [cellSize, setCellSize] = useState(0);
   useLayoutEffect(() => {
     if (width < height) {
-      setCellSize(width / (cellNum + 1));
+      setCellSize(Math.min(width / ((cellNum + 1) * 2), 50));
     } else {
-      setCellSize(height / (cellNum + 1));
+      setCellSize(Math.min(height / ((cellNum + 1) * 2), 50));
     }
   }, [width, height, cellNum]);
 
@@ -89,17 +76,11 @@ function App() {
         />
       );
     }
-    {
-      rows;
-    }
   }
 
   const buttons = [];
   for (let i = 0; i < cellNum; i++) {
     const color = buttonColors[i];
-    const colorStyle = {
-      backgroundColor: `rgb(${color.r}, ${color.g}, ${color.b})`,
-    };
     buttons.push(
       <Col
         key={i}
@@ -109,37 +90,64 @@ function App() {
         <ColorButton
           handleColorChange={handleColorChange}
           cellNum={i}
-          colorStyle={colorStyle}
+          cellSize={cellSize}
+          color={color}
         />
       </Col>
     );
   }
 
   return (
-    <Layout>
-      <Content>
-        <div
-          style={{ display: "flex", justifyContent: "center", width: "100%" }}
-        >
-          <Slider
-            style={{ width: "300px" }}
-            min={3}
-            max={10}
-            onChange={onChange}
-            value={cellNum}
-          />
-        </div>
-        <Row justify={"space-evenly"}>{buttons}</Row>
-        <div
-          style={{ display: "flex", justifyContent: "center", width: "100%" }}
-        >
-          <Stage
-            width={cellSize * (cellNum + 1)}
-            height={cellSize * (cellNum + 1)}
-          >
-            <Layer>{rows}</Layer>
-          </Stage>
-        </div>
+    <Layout style={{ minWidth: "100%" }}>
+      <Content style={{ minWidth: "100%", overflow: "auto" }}>
+        <Row justify={"space-evenly"}>
+          <Col span={10}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                width: "100%",
+              }}
+            >
+              <Slider
+                style={{ width: "80%" }}
+                min={3}
+                max={10}
+                onChange={onChange}
+                value={cellNum}
+              />
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                width: "100%",
+              }}
+            >
+              <p>基底色</p>
+            </div>
+            
+            <Row justify={"space-evenly"}>{buttons}</Row>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                width: "100%",
+              }}
+            >
+              <Stage
+                width={cellSize * (cellNum + 1)}
+                height={cellSize * (cellNum + 1)}
+              >
+                <Layer>{rows}</Layer>
+              </Stage>
+            </div>
+          </Col>
+          <Col span={14}>
+            <CA q={cellNum} colors={buttonColors} />
+          </Col>
+        </Row>
       </Content>
     </Layout>
   );

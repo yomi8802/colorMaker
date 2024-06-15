@@ -1,6 +1,6 @@
 import { Rgb, Hsv } from "./App.tsx";
 
-//HSVからRGBに変換する関数。
+//HSVからRGBに変換する関数. 
 export const HSV2RGB = (hsv: Hsv) => {
   const H: number = hsv.h / 60;
   const X: number = 1 - Math.abs((H % 2) - 1);
@@ -48,7 +48,7 @@ export const HSV2RGB = (hsv: Hsv) => {
   return rgbColor;
 };
 
-//RGB→HSV→RGBと変換し、明度を1に変換する。
+//RGB→HSV→RGBと変換し、明度を1に変換する. 
 export const RGBValueMax = (rgb: Rgb) => {
   const { r, g, b } = rgb;
 
