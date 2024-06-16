@@ -1,6 +1,7 @@
-import { useState, useLayoutEffect } from "react";
+import { useState, useLayoutEffect, useContext } from "react";
+import { AppStateContext } from "./AppStateContext";
 
-const useWindowSize = (): number[] => {
+export const useWindowSize = (): number[] => {
   const [size, setSize] = useState([0, 0]);
   useLayoutEffect(() => {
     const updateSize = (): void => {
@@ -15,4 +16,10 @@ const useWindowSize = (): number[] => {
   return size;
 };
 
-export default useWindowSize;
+export const useAppState = () => {
+  const context = useContext(AppStateContext);
+  if (!context) {
+    throw new Error('useAppState must be used within an AppStateProvider');
+  }
+  return context;
+};

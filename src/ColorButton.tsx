@@ -1,23 +1,21 @@
 import { useState, useEffect } from "react";
 import { Modal } from "antd";
 import { Stage, Layer, Rect } from "react-konva";
-import { Rgb } from "./App";
 import ColorPicker from "./ColorPicker";
 import { HSV2RGB } from "./ColorCalculation";
+import { useAppState } from "./hooks";
 
 type Prop = {
-  handleColorChange: (i: number, color: Rgb) => void;
   cellNum: number;
   cellSize: number;
-  color: Rgb;
 };
 
-const ColorButton = (props: Prop) => {
+const ColorButton = ({ cellNum, cellSize }: Prop) => {
+  const { buttonColors, setButtonColors } = useAppState();
+
   const [isModalOpen, setIsModalOpen] = useState(false); //モーダル操作用
   const [colorHue, setColorHue] = useState(0); //決定した色情報
   const [tempColorHue, setTempColorHue] = useState(0); //仮の色情報
-
-  const { handleColorChange, cellNum } = props;
 
   const showModal = () => {
     setTempColorHue(colorHue); //仮数値を現状の値に初期化. スライダー初期化用.
@@ -33,8 +31,8 @@ const ColorButton = (props: Prop) => {
   };
 
   useEffect(() => {
-    handleColorChange(cellNum, HSV2RGB({ h: colorHue, s: 1, v: 1 }));
-  }, [colorHue, handleColorChange, cellNum]);
+    setButtonColors(cellNum, HSV2RGB({ h: colorHue, s: 1, v: 1 }));
+  }, [colorHue, setButtonColors, cellNum]);
 
   //ColorPickerが操作するための関数
   const handleSliderChange = (newValue: number) => {
@@ -45,7 +43,7 @@ const ColorButton = (props: Prop) => {
     showModal();
   };
 
-  const colorStyle: string = `rgb(${props.color.r}, ${props.color.g}, ${props.color.b})`;
+  const colorStyle: string = `rgb(${buttonColors[cellNum].r}, ${buttonColors[cellNum].g}, ${buttonColors[cellNum].b})`;
 
   return (
     <div>
@@ -54,13 +52,13 @@ const ColorButton = (props: Prop) => {
           <Rect
             x={0}
             y={0}
-            width={props.cellSize}
-            height={props.cellSize}
+            width={cellSize}
+            height={cellSize}
             fill={colorStyle}
-            stroke={'black'}       // 縁取りの色を設定
+            stroke={"black"}
             strokeWidth={2}
             onClick={handleClick}
-            onTouchStart={handleClick} // モバイルデバイスのためにタッチイベントも追加
+            onTouchStart={handleClick} // モバイルデバイス用
           />
         </Layer>
       </Stage>

@@ -1,41 +1,44 @@
 import { useState, useEffect } from "react";
-import { Button, Input, Col, Row, Collapse, Divider, message } from "antd";
-import type { CollapseProps } from "antd";
+import {
+  Button,
+  Input,
+  Col,
+  Row,
+  Collapse,
+  Divider,
+  message,
+  Radio,
+  Checkbox,
+} from "antd";
+import { useAppState } from "./hooks";
+import type { RadioChangeEvent, CollapseProps, CheckboxProps } from "antd";
 
 type Prop = {
-  q: number;
   handleBChange: (newValue: number[][]) => void;
+  setChangeFirstRow: (isChange: boolean) => void;
 };
 
-export const Config = (props: Prop) => {
+export const Config = ({ handleBChange, setChangeFirstRow }: Prop) => {
+  const { q } = useAppState();
   const [rule, setRule] = useState("0");
   const [placeholder, setPlaceHolder] = useState("数字のみ、最大桁数:");
-  const [B, setB] = useState(new Array<number[]>());
+  const [B, setB] = useState(
+    Array(q ** 3)
+      .fill(null)
+      .map(() => new Array(q).fill(0))
+  );
   const [inputStatus, setInputStatus] = useState<
     "" | "warning" | "error" | undefined
   >(undefined);
+  const [radioValue, setRadioValue] = useState(1);
+  const [isRandom, setIsRandom] = useState(false);
+  const [changeFlag, setChangeFlag] = useState(true);
   const [messageApi, contextHolder] = message.useMessage();
-
-  const randomRule = () => {
-    //ランダムルール設定
-    setInputStatus(undefined);
-    const tempB = [];
-    let ruleNum = "";
-    for (let i = 0; i < props.q ** 3; i++) {
-      const temp = new Array(props.q).fill(0); //q成分の配列作成
-      const num = Math.round(Math.random() * (props.q - 1));
-      temp[num] = 1; //ランダムの１成分のみ1を立てる
-      tempB.push(temp);
-      ruleNum = ruleNum + num;
-    }
-    setRule(ruleNum);
-    setB(tempB);
-  };
 
   const errorMessage = () => {
     messageApi.open({
       type: "error",
-      content: "入力値は" + props.q + "未満の半角数字のみにしてください。",
+      content: "入力値は" + q + "未満の半角数字のみにしてください。",
     });
   };
 
@@ -51,7 +54,7 @@ export const Config = (props: Prop) => {
     const numbers = sanitized.split("").map((n) => parseInt(n));
 
     // 入力された各数字がprops.q未満であるかどうかをチェック
-    if (numbers.some((n) => n >= props.q)) {
+    if (numbers.some((n) => n >= q)) {
       setInputStatus("error"); // Inputのステータスをwarningに設定
       errorMessage();
       return; // 処理を終了
@@ -59,27 +62,63 @@ export const Config = (props: Prop) => {
 
     setInputStatus(undefined); // ステータスをリセット
 
-    const filtered = numbers.join("");
-    setRule(filtered.slice(0, props.q ** 3));
-    let ruleNum = filtered;
-    while (ruleNum.length < props.q ** 3) {
-      ruleNum = "0" + ruleNum;
+    if (isRandom) {
+      //ランダムルール設定
+      setInputStatus(undefined);
+      const tempB = [];
+      let ruleNum = "";
+      for (let i = 0; i < q ** 3; i++) {
+        const temp = new Array(q).fill(0); //q成分の配列作成
+        const num = Math.round(Math.random() * (q - 1));
+        temp[num] = 1; //ランダムの１成分のみ1を立てる
+        tempB.push(temp);
+        ruleNum = ruleNum + num;
+      }
+      setRule(ruleNum);
+      setB(tempB);
+    } else {
+      //入力値でルール設定
+      const filtered = numbers.join("");
+      setRule(filtered.slice(0, q ** 3));
+      let ruleNum = filtered;
+      while (ruleNum.length < q ** 3) {
+        ruleNum = "0" + ruleNum;
+      }
+
+      const tempB = [];
+      for (let i = 0; i < q ** 3; i++) {
+        const temp = new Array(q).fill(0); //q成分の配列作成
+        temp[Number(ruleNum[i])] = 1; //ランダムの１成分のみ1を立てる
+        tempB.push(temp);
+      }
+      setB(tempB);
     }
 
-    const tempB = [];
-    for (let i = 0; i < props.q ** 3; i++) {
-      const temp = new Array(props.q).fill(0); //q成分の配列作成
-      temp[Number(ruleNum[i])] = 1; //ランダムの１成分のみ1を立てる
-      tempB.push(temp);
+    setChangeFirstRow(changeFlag);
+  };
+
+  const onRuleChange = (e: RadioChangeEvent) => {
+    if (e.target.value === 1) {
+      setRadioValue(1);
+      setIsRandom(false);
+    } else if (e.target.value === 2) {
+      setRadioValue(2);
+      setIsRandom(true);
     }
-    setB(tempB);
-    props.handleBChange(B);
+  };
+
+  const onFirstRowChange: CheckboxProps["onChange"] = (e) => {
+    setChangeFlag(!e.target.checked);
   };
 
   useEffect(() => {
-    setPlaceHolder("数字のみ、最大桁数:" + props.q ** 3);
+    setPlaceHolder("数字のみ、最大桁数:" + q ** 3);
     setRule("0");
-  }, [props.q]);
+  }, [q]);
+
+  useEffect(() => {
+    handleBChange(B);
+  }, [handleBChange, B]);
 
   const items: CollapseProps["items"] = [
     {
@@ -87,27 +126,35 @@ export const Config = (props: Prop) => {
       label: "Config",
       children: (
         <>
+          <Divider />
           <Row justify={"space-evenly"}>
             <Col span={4}>
               <p>ルール番号</p>
             </Col>
           </Row>
           <Row justify={"space-evenly"}>
-            <Col span={4}>
-              <Button type="primary" onClick={randomRule}>
-                ランダム生成
-              </Button>
+            <Col span={24}>
+              <Radio.Group onChange={onRuleChange} value={radioValue}>
+                <Radio value={1}>指定する</Radio>
+                <Radio value={2}>ランダム生成する</Radio>
+                {!isRandom && (
+                  <Input
+                    value={rule}
+                    onChange={(e) => {
+                      setRule(e.target.value);
+                      setInputStatus(undefined);
+                    }}
+                    placeholder={placeholder}
+                    status={inputStatus}
+                  />
+                )}
+              </Radio.Group>
             </Col>
-            <Col span={16}>
-              <Input
-                value={rule}
-                onChange={(e) => {
-                  setRule(e.target.value);
-                  setInputStatus(undefined);
-                }}
-                placeholder={placeholder}
-                status={inputStatus}
-              />
+          </Row>
+          <Divider />
+          <Row justify={"space-evenly"}>
+            <Col span={24}>
+              <Checkbox onChange={onFirstRowChange}>初期値を固定する</Checkbox>
             </Col>
           </Row>
         </>
@@ -118,12 +165,22 @@ export const Config = (props: Prop) => {
   return (
     <>
       {contextHolder}
-      <Divider />
       <Collapse ghost items={items} />
       <Button type="primary" onClick={generate}>
         Generate
       </Button>
       <Divider />
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          width: "100%",
+        }}
+      >
+        <p style={{ width: "60%", wordWrap: "break-word" }}>
+          ルール番号: {rule}
+        </p>
+      </div>
     </>
   );
 };
