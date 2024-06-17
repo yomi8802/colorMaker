@@ -92,7 +92,7 @@ export const CA = () => {
     U.push(row);
   }
 
-  const cellSize = 20;
+  const cellSize = 15;
   const cellColor: Rgb = { r: 0, g: 0, b: 0 };
   for (let l = 0; l < q; l++) {
     cellColor.r = cellColor.r + U[0][0][l] * buttonColors[l].r;
