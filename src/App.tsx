@@ -1,5 +1,5 @@
 import { useState, useLayoutEffect } from "react";
-import { Layout, Slider, Col, Row } from "antd";
+import { Layout, Slider, Col, Row, Grid } from "antd";
 import { Content } from "antd/es/layout/layout";
 import { Layer, Rect, Stage } from "react-konva";
 import ColorButton from "./ColorButton";
@@ -18,16 +18,15 @@ export type Hsv = {
   s: number;
   v: number;
 };
+  
+const { useBreakpoint } = Grid;
 
-function App() {
-  const {
-    q,
-    setQ,
-    buttonColors,
-    setButtonColorsWhole,
-  } = useAppState();
+const App = () => {
+  const { q, setQ, buttonColors, setButtonColorsWhole } = useAppState();
 
   const initialColor: Rgb = { r: 255, g: 0, b: 0 };
+
+  const screen = useBreakpoint();
 
   const onChange = (newValue: number) => {
     setQ(newValue);
@@ -89,51 +88,99 @@ function App() {
   return (
     <Layout style={{ minHeight: "100vh" }}>
       <Content style={{ padding: "24px", minHeight: "280px", width: "100%" }}>
-        <Row justify={"space-evenly"}>
-          <Col span={10}>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                width: "100%",
-              }}
-            >
-              <Slider
-                style={{ width: "80%" }}
-                min={3}
-                max={10}
-                onChange={onChange}
-                value={q}
-              />
-            </div>
+          {screen.md ? (
+            <Row justify={"space-evenly"}>
+              <Col span={10}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    width: "100%",
+                  }}
+                >
+                  <Slider
+                    style={{ width: "80%" }}
+                    min={3}
+                    max={10}
+                    onChange={onChange}
+                    value={q}
+                  />
+                </div>
 
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                width: "100%",
-              }}
-            >
-              <p>基底色</p>
-            </div>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    width: "100%",
+                  }}
+                >
+                  <p>基底色</p>
+                </div>
 
-            <Row justify={"space-evenly"}>{buttons}</Row>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                width: "100%",
-              }}
-            >
-              <Stage width={cellSize * (q + 1)} height={cellSize * (q + 1)}>
-                <Layer>{rows}</Layer>
-              </Stage>
-            </div>
-          </Col>
-          <Col span={14}>
-            <CA />
-          </Col>
-        </Row>
+                <Row justify={"space-evenly"}>{buttons}</Row>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    width: "100%",
+                  }}
+                >
+                  <Stage width={cellSize * (q + 1)} height={cellSize * (q + 1)}>
+                    <Layer>{rows}</Layer>
+                  </Stage>
+                </div>
+              </Col>
+              <Col span={14}>
+                <CA />
+              </Col>
+            </Row>
+          ) : (
+            <Row justify={"space-evenly"}>
+              <Col span={24}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    width: "100%",
+                  }}
+                >
+                  <Slider
+                    style={{ width: "80%" }}
+                    min={3}
+                    max={10}
+                    onChange={onChange}
+                    value={q}
+                  />
+                </div>
+
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    width: "100%",
+                  }}
+                >
+                  <p>基底色</p>
+                </div>
+
+                <Row justify={"space-evenly"}>{buttons}</Row>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    width: "100%",
+                  }}
+                >
+                  <Stage width={cellSize * (q + 1)} height={cellSize * (q + 1)}>
+                    <Layer>{rows}</Layer>
+                  </Stage>
+                </div>
+              </Col>
+              <Col span={24}>
+                <CA />
+              </Col>
+            </Row>
+          )}
       </Content>
     </Layout>
   );
