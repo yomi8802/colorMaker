@@ -1,5 +1,5 @@
 import { useState, useLayoutEffect } from "react";
-import { Layout, Slider, Col, Row, Grid } from "antd";
+import { Layout, Slider, Col, Row, Grid, Divider } from "antd";
 import { Content } from "antd/es/layout/layout";
 import { Layer, Rect, Stage } from "react-konva";
 import ColorButton from "./ColorButton";
@@ -18,7 +18,7 @@ export type Hsv = {
   s: number;
   v: number;
 };
-  
+
 const { useBreakpoint } = Grid;
 
 const App = () => {
@@ -90,7 +90,7 @@ const App = () => {
       <Content style={{ padding: "24px", minHeight: "280px", width: "100%" }}>
           {screen.md ? (
             <Row justify={"space-evenly"}>
-              <Col span={10}>
+              <Col span={13}>
                 <div
                   style={{
                     display: "flex",
@@ -130,7 +130,7 @@ const App = () => {
                   </Stage>
                 </div>
               </Col>
-              <Col span={14}>
+              <Col span={11}>
                 <CA />
               </Col>
             </Row>
@@ -176,6 +176,7 @@ const App = () => {
                   </Stage>
                 </div>
               </Col>
+              <Divider />
               <Col span={24}>
                 <CA />
               </Col>
