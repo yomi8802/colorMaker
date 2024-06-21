@@ -1,4 +1,4 @@
-import React, { createContext, useState, ReactNode } from 'react';
+import React, { createContext, useState, ReactNode, useCallback } from 'react';
 import { Rgb } from './App';
 
 // アプリ全体からアクセスできる変数群
@@ -10,6 +10,7 @@ interface AppStateContextType {
   q: number;
   setQ: (num: number) => void;
   buttonColors: Array<Rgb>;
+  setButtonColors: (i: number, color: Rgb) => void;
   setButtonColorsWhole: (colors: Rgb[]) => void;
 }
 
@@ -31,12 +32,23 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
     Array(q).fill(initialColor)
   );
 
+  //各ボタンごとに色を設定
+  const setButtonColors = useCallback((i: number, color: Rgb) => {
+    setButtonColorsArray(prev => {
+      const newColors = [...prev];
+      newColors[i] = color;
+      return newColors;
+    });
+  },[]);
+
+  //ボタン全体の色を設定
   const setButtonColorsWhole = (newColors: Rgb[]) => {
     setButtonColorsArray(newColors);
   }
 
+  //valueの内容はアプリ全体からアクセス可能
   return (
-    <AppStateContext.Provider value={{ n, setN, nMax, setNMax, q, setQ, buttonColors, setButtonColorsWhole }}>
+    <AppStateContext.Provider value={{ n, setN, nMax, setNMax, q, setQ, buttonColors, setButtonColors, setButtonColorsWhole }}>
       {children}
     </AppStateContext.Provider>
   );
