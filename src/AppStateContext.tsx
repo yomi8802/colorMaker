@@ -1,7 +1,7 @@
-import React, { createContext, useState, ReactNode } from 'react';
+import React, { createContext, useState, ReactNode, useCallback } from 'react';
 import { Rgb } from './App';
 
-// アプリ全体からアクセスできる変数群
+// 異なる型を持つデータを管理するための Context の型定義
 interface AppStateContextType {
   n: number;
   setN: (num: number) => void;
@@ -10,6 +10,7 @@ interface AppStateContextType {
   q: number;
   setQ: (num: number) => void;
   buttonColors: Array<Rgb>;
+  setButtonColors: (i: number, color: Rgb) => void;
   setButtonColorsWhole: (colors: Rgb[]) => void;
 }
 
@@ -21,9 +22,9 @@ interface AppStateProviderProps {
 }
 
 export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) => {
-  const [n, setN] = useState(20);
-  const [nMax, setNMax] = useState(20);
-  const [q, setQ] = useState(3);
+  const [n, setN] = useState<number>(20);
+  const [nMax, setNMax] = useState<number>(20);
+  const [q, setQ] = useState<number>(3);
 
   const initialColor: Rgb = { r: 255, g: 0, b: 0 };
 
@@ -31,12 +32,20 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
     Array(q).fill(initialColor)
   );
 
+  const setButtonColors = useCallback((i: number, color: Rgb) => {
+    setButtonColorsArray(prev => {
+      const newColors = [...prev];
+      newColors[i] = color;
+      return newColors;
+    });
+  },[]);
+
   const setButtonColorsWhole = (newColors: Rgb[]) => {
     setButtonColorsArray(newColors);
   }
 
   return (
-    <AppStateContext.Provider value={{ n, setN, nMax, setNMax, q, setQ, buttonColors, setButtonColorsWhole }}>
+    <AppStateContext.Provider value={{ n, setN, nMax, setNMax, q, setQ, buttonColors, setButtonColors, setButtonColorsWhole }}>
       {children}
     </AppStateContext.Provider>
   );

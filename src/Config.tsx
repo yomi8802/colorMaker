@@ -16,10 +16,9 @@ import type { RadioChangeEvent, CollapseProps, CheckboxProps } from "antd";
 type Prop = {
   handleBChange: (newValue: number[][]) => void;
   setChangeFirstRow: (isChange: boolean) => void;
-  setCorrectNum: (correctNum: number) => void;
 };
 
-export const Config = ({ handleBChange, setChangeFirstRow, setCorrectNum }: Prop) => {
+export const Config = ({ handleBChange, setChangeFirstRow }: Prop) => {
   const { q } = useAppState();
   const [rule, setRule] = useState("0");
   const [placeholder, setPlaceHolder] = useState("数字のみ、最大桁数:");
@@ -32,9 +31,8 @@ export const Config = ({ handleBChange, setChangeFirstRow, setCorrectNum }: Prop
     "" | "warning" | "error" | undefined
   >(undefined);
   const [radioValue, setRadioValue] = useState(1);
-  const [correctRadioValue, setCorrectRadioValue] = useState(1);
   const [isRandom, setIsRandom] = useState(false);
-  const [firstRowChangeFlag, setFirstRowChangeFlag] = useState(true);
+  const [changeFlag, setChangeFlag] = useState(true);
   const [messageApi, contextHolder] = message.useMessage();
 
   const errorMessage = () => {
@@ -96,11 +94,9 @@ export const Config = ({ handleBChange, setChangeFirstRow, setCorrectNum }: Prop
       setB(tempB);
     }
 
-    //generateされたタイミングで変更
-    setChangeFirstRow(firstRowChangeFlag);
+    setChangeFirstRow(changeFlag);
   };
 
-  //ルール変更ラジオボタン
   const onRuleChange = (e: RadioChangeEvent) => {
     if (e.target.value === 1) {
       setRadioValue(1);
@@ -111,21 +107,10 @@ export const Config = ({ handleBChange, setChangeFirstRow, setCorrectNum }: Prop
     }
   };
 
-  //初期値変更チェックボックス
   const onFirstRowChange: CheckboxProps["onChange"] = (e) => {
-    setFirstRowChangeFlag(!e.target.checked);
+    setChangeFlag(!e.target.checked);
   };
 
-  //補完変更ラジオボタン
-  const onCorrectNumChange = (e: RadioChangeEvent) => {
-    if (e.target.value === 1) {
-      setCorrectRadioValue(1);
-    } else if (e.target.value === 2) {
-      setCorrectRadioValue(2);
-    }
-  };
-
-  //ボタン変更直後だと動かなかったりしたのでuseEffectで管理
   useEffect(() => {
     setPlaceHolder("数字のみ、最大桁数:" + q ** 3);
     setRule("0");
@@ -135,11 +120,6 @@ export const Config = ({ handleBChange, setChangeFirstRow, setCorrectNum }: Prop
     handleBChange(B);
   }, [handleBChange, B]);
 
-  useEffect(() => {
-    setCorrectNum(correctRadioValue);
-  },[setCorrectNum, correctRadioValue]);
-
-  //コラプス内のアイテム
   const items: CollapseProps["items"] = [
     {
       key: "1",
@@ -175,18 +155,6 @@ export const Config = ({ handleBChange, setChangeFirstRow, setCorrectNum }: Prop
           <Row justify={"space-evenly"}>
             <Col span={24}>
               <Checkbox onChange={onFirstRowChange}>初期値を固定する</Checkbox>
-            </Col>
-          </Row>
-          <Divider />
-          <Row justify={"space-evenly"}>
-            <Col span={4}>
-              <p>色補正</p>
-            </Col>
-            <Col span={24}>
-            <Radio.Group onChange={onCorrectNumChange} value={correctRadioValue}>
-                <Radio value={1}>補正しない</Radio>
-                <Radio value={2}>分散で補正する</Radio>
-              </Radio.Group>
             </Col>
           </Row>
         </>
