@@ -1,17 +1,36 @@
 import { useState } from "react";
-import { Stage, Rect, Layer } from "react-konva";
+import { Stage, Rect, Layer, Text, Group } from "react-konva";
+import { KonvaEventObject } from "konva/lib/Node";
 import { Rgb } from "./App";
 import { Config } from "./Config";
+import { RGBValueVar } from "./ColorCalculation";
 import { useAppState } from "./hooks";
+
+interface Tooltip {
+  visible: boolean;
+  x: number;
+  y: number;
+  text: string;
+}
 
 export const CA = () => {
   const { n, nMax, q, buttonColors } = useAppState();
   const [B, setB] = useState<Array<Array<number>>>(Array(q).fill(0));
   const [isChangeFirstRow, setChangeFirstRow] = useState(true);
+  const [correctNum, setCorrectNum] = useState(1);
   const [firstRow, setFirstRow] = useState(() => {
-    const initialArray = new Array(n).fill(null).map(() => new Array(q).fill(0));
+    const initialArray = new Array(n)
+      .fill(null)
+      .map(() => new Array(q).fill(0));
     return initialArray;
   });
+  const [tooltip, setTooltip] = useState<Tooltip>({
+    visible: false,
+    x: 0,
+    y: 0,
+    text: "",
+  });
+  const cellSize = 15;
 
   //ColorPickerが操作するための関数
   const handleBChange = (newValue: number[][]) => {
@@ -19,7 +38,6 @@ export const CA = () => {
   };
 
   if (isChangeFirstRow) {
-    console.log(isChangeFirstRow);
     const tempFirstRow: number[][] = [];
     //各列ごと作成
     for (let i = 0; i < n; i++) {
@@ -44,8 +62,6 @@ export const CA = () => {
     }
     setFirstRow(tempFirstRow);
     setChangeFirstRow(false);
-    console.log(isChangeFirstRow);
-    console.log(tempFirstRow);
   }
 
   //ランダムルール設定
@@ -54,6 +70,50 @@ export const CA = () => {
     temp[Math.round(Math.random() * (q - 1))] = 1; //ランダムの１成分のみ1を立てる
     B.push(temp);
   }
+
+  //ツールチップ用
+  const handleMouseEnter = (e: KonvaEventObject<MouseEvent>, text: string) => {
+    const shape = e.target;
+    const stage = shape.getStage();
+    if (stage) {
+      const mousePos = stage.getPointerPosition();
+      if (mousePos) {
+        const tooltipX = mousePos.x + 10;
+        const tooltipY = mousePos.y + 10;
+        const stageWidth = stage.width();
+        const stageHeight = stage.height();
+        const tooltipWidth =
+          Math.max(...text.split("\n").map((line) => line.length)) * 10;
+        const tooltipHeight = text.split("\n").length * 20;
+
+        // stage内に収まるように座標設定
+        const adjustedX =
+          tooltipX + tooltipWidth > stageWidth
+            ? stageWidth - tooltipWidth - 10
+            : tooltipX;
+        const adjustedY =
+          tooltipY + tooltipHeight > stageHeight
+            ? stageHeight - tooltipHeight - 10
+            : tooltipY;
+
+        setTooltip({
+          visible: true,
+          x: adjustedX,
+          y: adjustedY,
+          text,
+        });
+      }
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setTooltip({
+      visible: false,
+      x: 0,
+      y: 0,
+      text: "",
+    });
+  };
 
   //Uの初期値設定
   const U: number[][][] = [];
@@ -92,34 +152,36 @@ export const CA = () => {
     U.push(row);
   }
 
-  const cellSize = 15;
-  const cellColor: Rgb = { r: 0, g: 0, b: 0 };
-  for (let l = 0; l < q; l++) {
-    cellColor.r = cellColor.r + U[0][0][l] * buttonColors[l].r;
-    cellColor.g = cellColor.g + U[0][0][l] * buttonColors[l].g;
-    cellColor.b = cellColor.b + U[0][0][l] * buttonColors[l].b;
-  }
-
-  const rows = [];
+  //図形作成
+  const rects = [];
   for (let i = 0; i < n; i++) {
     for (let j = 0; j < nMax; j++) {
-      const cellColor: Rgb = { r: 0, g: 0, b: 0 };
+      let cellColor: Rgb = { r: 0, g: 0, b: 0 };
       for (let l = 0; l < q; l++) {
-        cellColor.r = cellColor.r + U[i][j][l] * buttonColors[l].r;
-        cellColor.g = cellColor.g + U[i][j][l] * buttonColors[l].g;
-        cellColor.b = cellColor.b + U[i][j][l] * buttonColors[l].b;
+        cellColor.r += (U[i][j][l] * buttonColors[l].r);
+        cellColor.g += (U[i][j][l] * buttonColors[l].g);
+        cellColor.b += (U[i][j][l] * buttonColors[l].b);
       }
-      const colorStyle: string = `rgb(${cellColor.r}, ${cellColor.g}, ${cellColor.b})`;
-      rows.push(
-        <Rect
-          fill={colorStyle}
-          x={cellSize / 2 + cellSize * j}
-          y={cellSize / 2 + cellSize * i}
-          width={cellSize}
-          height={cellSize}
-          key={`${i}-${j}`}
-        />
-      );
+
+      //分散で補間
+      if (correctNum === 2) {
+        cellColor.r /= 255;
+        cellColor.g /= 255;
+        cellColor.b /= 255;
+        cellColor = RGBValueVar(cellColor, U[i][j]);
+      }
+
+      const colorStyle = `rgb(${cellColor.r}, ${cellColor.g}, ${cellColor.b})`;
+      const formattedU = U[i][j].map((num) => num.toFixed(2)).join(", "); //桁数が多すぎるので小数点以下2桁で丸める
+      rects.push({
+        id: `${i}-${j}`,
+        x: cellSize / 2 + cellSize * j,
+        y: cellSize / 2 + cellSize * i,
+        width: cellSize,
+        height: cellSize,
+        fill: colorStyle,
+        text: `U: ${formattedU}\nColor: rgb(${cellColor.r.toFixed(2)}, ${cellColor.g.toFixed(2)}, ${cellColor.b.toFixed(2)})`,
+      });
     }
   }
 
@@ -128,10 +190,44 @@ export const CA = () => {
       <Config
         handleBChange={handleBChange}
         setChangeFirstRow={setChangeFirstRow}
+        setCorrectNum={setCorrectNum}
       />
       <div style={{ display: "flex", justifyContent: "center" }}>
         <Stage width={cellSize * (n + 1)} height={cellSize * (nMax + 1)}>
-          <Layer>{rows}</Layer>
+          <Layer>
+            {rects.map((rect) => (
+              <Rect
+                key={rect.id}
+                x={rect.x}
+                y={rect.y}
+                width={rect.width}
+                height={rect.height}
+                fill={rect.fill}
+                onMouseEnter={(e) => handleMouseEnter(e, rect.text)}
+                onMouseLeave={handleMouseLeave}
+              />
+            ))}
+            {tooltip.visible && (
+              <Group x={tooltip.x + 50} y={tooltip.y}>
+                <Rect
+                  width={
+                    Math.max(
+                      ...tooltip.text.split("\n").map((line) => line.length)
+                    ) * 10
+                  }
+                  height={tooltip.text.split("\n").length * 20}
+                  fill="white"
+                  cornerRadius={5}
+                />
+                <Text
+                  text={tooltip.text}
+                  fontSize={15}
+                  fill="black"
+                  padding={5}
+                />
+              </Group>
+            )}
+          </Layer>
         </Stage>
       </div>
     </>
