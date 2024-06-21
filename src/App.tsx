@@ -1,8 +1,9 @@
 import { useState, useLayoutEffect } from "react";
-import { Layout, Slider, Col, Row, Grid, Divider } from "antd";
+import { Layout, Slider, Col, Row, Grid, Divider, Flex } from "antd";
 import { Content } from "antd/es/layout/layout";
 import { Layer, Rect, Stage } from "react-konva";
 import ColorButton from "./ColorButton";
+import EvenlySpaceButton from "./EvenlySpaceButton.tsx";
 import { MixRGB } from "./ColorCalculation";
 import { CA } from "./CA.tsx";
 import { useWindowSize, useAppState } from "./hooks";
@@ -77,7 +78,7 @@ const App = () => {
     buttons.push(
       <Col
         key={i}
-        span={Math.floor(18 / q)}
+        span={Math.round(18 / q)}
         style={{ display: "flex", justifyContent: "center" }}
       >
         <ColorButton cellNum={i} cellSize={cellSize} />
@@ -88,103 +89,135 @@ const App = () => {
   return (
     <Layout style={{ minHeight: "100vh" }}>
       <Content style={{ padding: "24px", minHeight: "280px", width: "100%" }}>
-          {screen.md ? (
-            <Row justify={"space-evenly"}>
-              <Col span={13}>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    width: "100%",
-                  }}
-                >
-                  <Slider
-                    style={{ width: "80%" }}
-                    min={3}
-                    max={10}
-                    onChange={onChange}
-                    value={q}
-                  />
-                </div>
+        {screen.md ? (
+          <Row justify={"space-evenly"}>
+            <Col span={12}>
+              <Flex
+                style={{
+                  width: "100%",
+                }}
+                justify="space-evenly"
+                align="center"
+              >
+                <Slider
+                  style={{ width: "80%" }}
+                  min={3}
+                  max={10}
+                  onChange={onChange}
+                  value={q}
+                />
+              </Flex>
 
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    width: "100%",
-                  }}
-                >
-                  <p>基底色</p>
-                </div>
+              <Row justify={"space-evenly"}>
+                <Col span={4} />
+                <Col span={4}>
+                  <Flex
+                    style={{
+                      height: "100%",
+                    }}
+                    justify="space-evenly"
+                    align="center"
+                  >
+                    <p>Base Colors</p>
+                  </Flex>
+                </Col>
+                <Col span={4}>
+                  <Flex
+                    style={{
+                      height: "100%",
+                    }}
+                    justify="space-evenly"
+                    align="center"
+                  >
+                    <EvenlySpaceButton />
+                  </Flex>
+                </Col>
+              </Row>
 
-                <Row justify={"space-evenly"}>{buttons}</Row>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    width: "100%",
-                  }}
-                >
-                  <Stage width={cellSize * (q + 1)} height={cellSize * (q + 1)}>
-                    <Layer>{rows}</Layer>
-                  </Stage>
-                </div>
-              </Col>
-              <Col span={11}>
-                <CA />
-              </Col>
-            </Row>
-          ) : (
-            <Row justify={"space-evenly"}>
-              <Col span={24}>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    width: "100%",
-                  }}
-                >
-                  <Slider
-                    style={{ width: "80%" }}
-                    min={3}
-                    max={10}
-                    onChange={onChange}
-                    value={q}
-                  />
-                </div>
+              <Row justify={"center"}>{buttons}</Row>
+              <Flex
+                style={{
+                  width: "100%",
+                }}
+                justify="space-evenly"
+                align="center"
+              >
+                <Stage width={cellSize * (q + 1)} height={cellSize * (q + 1)}>
+                  <Layer>{rows}</Layer>
+                </Stage>
+              </Flex>
+            </Col>
+            <Col span={11}>
+              <CA />
+            </Col>
+          </Row>
+        ) : (
+          <Row justify={"space-evenly"}>
+            <Col span={24}>
+              <Flex
+                style={{
+                  width: "100%",
+                }}
+                justify="space-evenly"
+                align="center"
+              >
+                <Slider
+                  style={{ width: "80%" }}
+                  min={3}
+                  max={10}
+                  onChange={onChange}
+                  value={q}
+                />
+              </Flex>
 
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    width: "100%",
-                  }}
-                >
-                  <p>基底色</p>
-                </div>
+              <Row justify={"space-evenly"}>
+                <Col span={4} />
+                <Col span={4}>
+                  <Flex
+                    style={{
+                      height: "100%",
+                    }}
+                    justify="space-evenly"
+                    align="center"
+                  >
+                    <p>Base Colors</p>
+                  </Flex>
+                </Col>
+                <Col span={4}>
+                  <Flex
+                    style={{
+                      height: "100%",
+                    }}
+                    justify="space-evenly"
+                    align="center"
+                  >
+                    <EvenlySpaceButton />
+                  </Flex>
+                </Col>
+              </Row>
 
-                <Row justify={"space-evenly"}>{buttons}</Row>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    width: "100%",
-                  }}
-                >
-                  <Stage width={cellSize * (q + 1)} height={cellSize * (q + 1)}>
-                    <Layer>{rows}</Layer>
-                  </Stage>
-                </div>
-              </Col>
-              <Divider />
-              <Col span={24}>
-                <CA />
-              </Col>
-            </Row>
-          )}
+              <Row justify={"space-evenly"}>{buttons}</Row>
+              <Flex
+                style={{
+                  width: "100%",
+                }}
+                justify="space-evenly"
+                align="center"
+              >
+                <Stage width={cellSize * (q + 1)} height={cellSize * (q + 1)}>
+                  <Layer>{rows}</Layer>
+                </Stage>
+              </Flex>
+            </Col>
+            <Divider />
+            <Col span={24}>
+              <CA />
+            </Col>
+          </Row>
+        )}
       </Content>
     </Layout>
   );
-}
+};
 
 export default App;

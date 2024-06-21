@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Stage, Rect, Layer, Text, Group } from "react-konva";
 import { KonvaEventObject } from "konva/lib/Node";
-import { Rgb } from "./App";
 import { Config } from "./Config";
 import { RGBValueVar } from "./ColorCalculation";
 import { useAppState } from "./hooks";
@@ -156,7 +155,7 @@ export const CA = () => {
   const rects = [];
   for (let i = 0; i < n; i++) {
     for (let j = 0; j < nMax; j++) {
-      let cellColor: Rgb = { r: 0, g: 0, b: 0 };
+      let cellColor = { r: 0, g: 0, b: 0 };
       for (let l = 0; l < q; l++) {
         cellColor.r += (U[i][j][l] * buttonColors[l].r);
         cellColor.g += (U[i][j][l] * buttonColors[l].g);
@@ -208,7 +207,7 @@ export const CA = () => {
               />
             ))}
             {tooltip.visible && (
-              <Group x={tooltip.x + 50} y={tooltip.y}>
+              <Group x={tooltip.x + 30} y={tooltip.y}>
                 <Rect
                   width={
                     Math.max(

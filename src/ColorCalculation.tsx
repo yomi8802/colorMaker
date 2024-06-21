@@ -32,25 +32,13 @@ export const HSV2RGB = (hsv: Hsv) => {
   return rgbColor;
 };
 
-//RGB→HSV→RGBと変換し、明度を1に変換する.
-export const RGBValueVar = (rgb: Rgb, value: number[]) => {
+export const RGB2HSV = (rgb: Rgb) => {
   const { r, g, b } = rgb;
-  const { q } = useAppState();
 
-  //RGB→HSV
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
 
-  const hsvColor: Hsv = { h: 0, s: 0, v: 0 }; //明度は1
-
-  //0.5,0.5の行列
-  const maxValue = new Array(q).fill(0);
-  maxValue[0] = 0.5;
-  maxValue[1] = 0.5;
-
-  //0.5,0.5までvが1になるように補間
-  hsvColor.v =
-    Math.max(Math.min(Variance(value) / Variance(maxValue), 1), 0);
+  const hsvColor: Hsv = { h: 0, s: 0, v: 0 };
 
   if (max === min) {
     hsvColor.h = 0; //max-min = 0のときは色相は関係ないので適当に
@@ -63,6 +51,47 @@ export const RGBValueVar = (rgb: Rgb, value: number[]) => {
   }
 
   hsvColor.s = max - min;
+  hsvColor.v = max;
+
+  return hsvColor;
+}
+
+export const returnH = (rgb: Rgb) => {
+  const { r, g, b } = rgb;
+
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+
+  let h = 0;
+
+  if (max === min) {
+    h = 0; //max-min = 0のときは色相は関係ないので適当に
+  } else if (min == r) {
+    h = ((60 * (b - g)) / (max - min) + 180) % 360;
+  } else if (min == g) {
+    h = ((60 * (r - b)) / (max - min) + 300) % 360;
+  } else if (min == b) {
+    h = ((60 * (g - r)) / (max - min) + 60) % 360;
+  }
+
+  return h;
+}
+
+//RGB→HSV→RGBと変換し、明度を1に変換する.
+export const RGBValueVar = (rgb: Rgb, value: number[]) => {
+  const { q } = useAppState();
+
+  //RGB→HSV
+  const hsvColor = RGB2HSV(rgb);
+
+  //0.5,0.5の行列
+  const maxValue = new Array(q).fill(0);
+  maxValue[0] = 0.5;
+  maxValue[1] = 0.5;
+
+  //0.5,0.5までvが1になるように補間
+  hsvColor.v =
+    Math.max(Math.min(Variance(value) / Variance(maxValue), 1), 0);
 
   //HSV→RGBして返す
   return HSV2RGB(hsvColor);

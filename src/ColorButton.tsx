@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Modal } from "antd";
 import { Stage, Layer, Rect } from "react-konva";
 import ColorPicker from "./ColorPicker";
-import { HSV2RGB } from "./ColorCalculation";
+import { HSV2RGB, returnH } from "./ColorCalculation";
 import { useAppState } from "./hooks";
 
 type Prop = {
@@ -18,7 +18,7 @@ const ColorButton = ({ cellNum, cellSize }: Prop) => {
   const [tempColorHue, setTempColorHue] = useState(0); //仮の色情報
 
   const showModal = () => {
-    setTempColorHue(colorHue); //仮数値を現状の値に初期化. スライダー初期化用.
+    setTempColorHue(returnH(buttonColors[cellNum])); //仮数値を現状の値に初期化. スライダー初期化用.
     setIsModalOpen(true);
   };
   const handleOk = () => {
@@ -26,7 +26,7 @@ const ColorButton = ({ cellNum, cellSize }: Prop) => {
     setIsModalOpen(false);
   };
   const handleCancel = () => {
-    setTempColorHue(colorHue);
+    setTempColorHue(returnH(buttonColors[cellNum]));
     setIsModalOpen(false);
   };
 
@@ -47,7 +47,7 @@ const ColorButton = ({ cellNum, cellSize }: Prop) => {
 
   return (
     <div>
-      <Stage width={50} height={50}>
+      <Stage width={cellSize} height={cellSize}>
         <Layer>
           <Rect
             x={0}
