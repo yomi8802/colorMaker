@@ -9,19 +9,35 @@ import {
   message,
   Radio,
   Checkbox,
+  Slider,
+  InputNumber,
+  Typography,
 } from "antd";
 import { useAppState } from "./hooks";
-import type { RadioChangeEvent, CollapseProps, CheckboxProps } from "antd";
+import type {
+  RadioChangeEvent,
+  CollapseProps,
+  CheckboxProps,
+  InputNumberProps,
+} from "antd";
+import RuleSetting from "./RuleSetting";
 
 type Prop = {
   handleBChange: (newValue: number[][]) => void;
   setChangeFirstRow: (isChange: boolean) => void;
   setCorrectNum: (correctNum: number) => void;
+  setShowDetail: (isShowDetail: boolean) => void;
+  resetDetail: () => void;
 };
 
-export const Config = ({ handleBChange, setChangeFirstRow, setCorrectNum }: Prop) => {
-  const { q } = useAppState();
-  const [rule, setRule] = useState("0");
+export const Config = ({
+  handleBChange,
+  setChangeFirstRow,
+  setCorrectNum,
+  setShowDetail,
+  resetDetail,
+}: Prop) => {
+  const { q, setMinCorrect, rule, setRule } = useAppState();
   const [placeholder, setPlaceHolder] = useState("数字のみ、最大桁数:");
   const [B, setB] = useState(
     Array(q ** 3)
@@ -33,16 +49,19 @@ export const Config = ({ handleBChange, setChangeFirstRow, setCorrectNum }: Prop
   >(undefined);
   const [radioValue, setRadioValue] = useState(1);
   const [correctRadioValue, setCorrectRadioValue] = useState(1);
+  const [inputValue, setInputValue] = useState(0.3);
+  const [isCorrect, setCorrect] = useState(false);
   const [isRandom, setIsRandom] = useState(false);
   const [firstRowChangeFlag, setFirstRowChangeFlag] = useState(true);
+  const [showDetailFlag, setShowDetailFlag] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
-
   const errorMessage = () => {
     messageApi.open({
       type: "error",
       content: "入力値は" + q + "未満の半角数字のみにしてください。",
     });
   };
+  const { Text } = Typography;
 
   const generate = () => {
     // 数字以外の文字が含まれているかどうかをチェック
@@ -52,6 +71,7 @@ export const Config = ({ handleBChange, setChangeFirstRow, setCorrectNum }: Prop
       return; // 処理を終了
     }
 
+    //数字以外の文字を削除し、numberに変換
     const sanitized = rule.replace(/\D/g, "");
     const numbers = sanitized.split("").map((n) => parseInt(n));
 
@@ -64,40 +84,14 @@ export const Config = ({ handleBChange, setChangeFirstRow, setCorrectNum }: Prop
 
     setInputStatus(undefined); // ステータスをリセット
 
-    if (isRandom) {
-      //ランダムルール設定
-      setInputStatus(undefined);
-      const tempB = [];
-      let ruleNum = "";
-      for (let i = 0; i < q ** 3; i++) {
-        const temp = new Array(q).fill(0); //q成分の配列作成
-        const num = Math.round(Math.random() * (q - 1));
-        temp[num] = 1; //ランダムの１成分のみ1を立てる
-        tempB.push(temp);
-        ruleNum = ruleNum + num;
-      }
-      setRule(ruleNum);
-      setB(tempB);
-    } else {
-      //入力値でルール設定
-      const filtered = numbers.join("");
-      setRule(filtered.slice(0, q ** 3));
-      let ruleNum = filtered;
-      while (ruleNum.length < q ** 3) {
-        ruleNum = "0" + ruleNum;
-      }
-
-      const tempB = [];
-      for (let i = 0; i < q ** 3; i++) {
-        const temp = new Array(q).fill(0); //q成分の配列作成
-        temp[Number(ruleNum[i])] = 1; //ランダムの１成分のみ1を立てる
-        tempB.push(temp);
-      }
-      setB(tempB);
-    }
+    //ルール設定
+    RuleSetting({ q, numbers, setRule, setB, isRandom });
 
     //generateされたタイミングで変更
     setChangeFirstRow(firstRowChangeFlag);
+
+    //詳細情報をリセット
+    resetDetail();
   };
 
   //ルール変更ラジオボタン
@@ -120,9 +114,21 @@ export const Config = ({ handleBChange, setChangeFirstRow, setCorrectNum }: Prop
   const onCorrectNumChange = (e: RadioChangeEvent) => {
     if (e.target.value === 1) {
       setCorrectRadioValue(1);
+      setCorrect(false);
     } else if (e.target.value === 2) {
       setCorrectRadioValue(2);
+      setCorrect(true);
     }
+  };
+
+  //詳細表示変更チェックボックス
+  const handleShowDetailFlagChange: CheckboxProps["onChange"] = (e) => {
+    setShowDetailFlag(e.target.checked);
+  };
+
+  //スライダー操作時
+  const onChange: InputNumberProps["onChange"] = (newValue) => {
+    setInputValue(newValue as number);
   };
 
   //ボタン変更直後だと動かなかったりしたのでuseEffectで管理
@@ -137,7 +143,15 @@ export const Config = ({ handleBChange, setChangeFirstRow, setCorrectNum }: Prop
 
   useEffect(() => {
     setCorrectNum(correctRadioValue);
-  },[setCorrectNum, correctRadioValue]);
+  }, [setCorrectNum, correctRadioValue]);
+
+  useEffect(() => {
+    setMinCorrect(inputValue);
+  }, [inputValue, setMinCorrect]);
+
+  useEffect(() => {
+    setShowDetail(showDetailFlag);
+  }, [setShowDetail, showDetailFlag]);
 
   //コラプス内のアイテム
   const items: CollapseProps["items"] = [
@@ -166,6 +180,7 @@ export const Config = ({ handleBChange, setChangeFirstRow, setCorrectNum }: Prop
                     }}
                     placeholder={placeholder}
                     status={inputStatus}
+                    style={{ marginTop: "1vw" }}
                   />
                 )}
               </Radio.Group>
@@ -173,6 +188,9 @@ export const Config = ({ handleBChange, setChangeFirstRow, setCorrectNum }: Prop
           </Row>
           <Divider />
           <Row justify={"space-evenly"}>
+            <Col span={4}>
+              <p>初期値</p>
+            </Col>
             <Col span={24}>
               <Checkbox onChange={onFirstRowChange}>初期値を固定する</Checkbox>
             </Col>
@@ -183,12 +201,48 @@ export const Config = ({ handleBChange, setChangeFirstRow, setCorrectNum }: Prop
               <p>色補正</p>
             </Col>
             <Col span={24}>
-            <Radio.Group onChange={onCorrectNumChange} value={correctRadioValue}>
+              <Radio.Group
+                onChange={onCorrectNumChange}
+                value={correctRadioValue}
+              >
                 <Radio value={1}>補正しない</Radio>
                 <Radio value={2}>分散で補正する</Radio>
+                {isCorrect && (
+                  <>
+                    <div style={{ marginTop: "1vw" }}>
+                      <Text style={{ marginRight: "0.3vw" }}>最低値</Text>
+                      <InputNumber
+                        min={0.3}
+                        max={1}
+                        value={inputValue}
+                        step={0.01}
+                        onChange={onChange}
+                      />
+                    </div>
+                    <Slider
+                      min={0.3}
+                      max={1}
+                      onChange={onChange}
+                      value={typeof inputValue === "number" ? inputValue : 0}
+                      step={0.01}
+                    />
+                  </>
+                )}
               </Radio.Group>
             </Col>
           </Row>
+          <Divider />
+          <Row justify={"space-evenly"}>
+            <Col span={4}>
+              <p>詳細表示</p>
+            </Col>
+            <Col span={24}>
+              <Checkbox onChange={handleShowDetailFlagChange}>
+                セルの詳細情報を表示する
+              </Checkbox>
+            </Col>
+          </Row>
+          <Divider />
         </>
       ),
     },
@@ -202,17 +256,6 @@ export const Config = ({ handleBChange, setChangeFirstRow, setCorrectNum }: Prop
         Generate
       </Button>
       <Divider />
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          width: "100%",
-        }}
-      >
-        <p style={{ width: "60%", wordWrap: "break-word" }}>
-          ルール番号: {rule}
-        </p>
-      </div>
     </>
   );
 };

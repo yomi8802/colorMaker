@@ -77,9 +77,9 @@ export const returnH = (rgb: Rgb) => {
   return h;
 }
 
-//RGB→HSV→RGBと変換し、明度を1に変換する.
+//RGB→HSV→RGBと変換し、明度を分散で補間する.
 export const RGBValueVar = (rgb: Rgb, value: number[]) => {
-  const { q } = useAppState();
+  const { q, minCorrect } = useAppState();
 
   //RGB→HSV
   const hsvColor = RGB2HSV(rgb);
@@ -91,7 +91,7 @@ export const RGBValueVar = (rgb: Rgb, value: number[]) => {
 
   //0.5,0.5までvが1になるように補間
   hsvColor.v =
-    Math.max(Math.min(Variance(value) / Variance(maxValue), 1), 0);
+    minCorrect + Math.max(Math.min(Variance(value) / Variance(maxValue), 1), 0) * (1 - minCorrect);
 
   //HSV→RGBして返す
   return HSV2RGB(hsvColor);
@@ -111,7 +111,7 @@ export const MixRGB = (firstColor: Rgb, secondColor: Rgb) => {
   Value[0] = 0.5;
   Value[1] = 0.5;
 
-  //合成した色の明度を1に変換して返す
+  //合成した色の明度を補完して返す
   return RGBValueVar(mixColor, Value);
 };
 

@@ -53,6 +53,7 @@ const ColorPicker = (props: Props) => {
           onChange={onChange}
           value={typeof inputValue === "number" ? inputValue : 0}
         />
+        <a style={{ paddingRight: "0.3vw" }}>H:</a>
         <InputNumber min={0} max={360} value={inputValue} onChange={onChange} />
       </div>
     </div>
