@@ -135,7 +135,7 @@ export const Config = ({
   useEffect(() => {
     setPlaceHolder("数字のみ、最大桁数:" + q ** 3);
     setRule("0");
-  }, [q]);
+  }, [q, setRule]);
 
   useEffect(() => {
     handleBChange(B);

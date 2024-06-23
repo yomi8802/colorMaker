@@ -56,27 +56,6 @@ export const RGB2HSV = (rgb: Rgb) => {
   return hsvColor;
 }
 
-export const returnH = (rgb: Rgb) => {
-  const { r, g, b } = rgb;
-
-  const max = Math.max(r, g, b);
-  const min = Math.min(r, g, b);
-
-  let h = 0;
-
-  if (max === min) {
-    h = 0; //max-min = 0のときは色相は関係ないので適当に
-  } else if (min == r) {
-    h = ((60 * (b - g)) / (max - min) + 180) % 360;
-  } else if (min == g) {
-    h = ((60 * (r - b)) / (max - min) + 300) % 360;
-  } else if (min == b) {
-    h = ((60 * (g - r)) / (max - min) + 60) % 360;
-  }
-
-  return h;
-}
-
 //RGB→HSV→RGBと変換し、明度を分散で補間する.
 export const RGBValueVar = (rgb: Rgb, value: number[]) => {
   const { q, minCorrect } = useAppState();
