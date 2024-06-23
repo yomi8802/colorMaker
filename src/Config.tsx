@@ -159,10 +159,10 @@ export const Config = ({
       key: "1",
       label: "Config",
       children: (
-        <>
+        <div className="scrollable-content">
           <Divider />
           <Row justify={"space-evenly"}>
-            <Col span={4}>
+            <Col span={6}>
               <p>ルール番号</p>
             </Col>
           </Row>
@@ -188,7 +188,7 @@ export const Config = ({
           </Row>
           <Divider />
           <Row justify={"space-evenly"}>
-            <Col span={4}>
+            <Col span={6}>
               <p>初期値</p>
             </Col>
             <Col span={24}>
@@ -197,7 +197,7 @@ export const Config = ({
           </Row>
           <Divider />
           <Row justify={"space-evenly"}>
-            <Col span={4}>
+            <Col span={6}>
               <p>色補正</p>
             </Col>
             <Col span={24}>
@@ -233,7 +233,7 @@ export const Config = ({
           </Row>
           <Divider />
           <Row justify={"space-evenly"}>
-            <Col span={4}>
+            <Col span={6}>
               <p>詳細表示</p>
             </Col>
             <Col span={24}>
@@ -243,7 +243,7 @@ export const Config = ({
             </Col>
           </Row>
           <Divider />
-        </>
+        </div>
       ),
     },
   ];
