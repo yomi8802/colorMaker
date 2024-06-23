@@ -162,7 +162,7 @@ export const Config = ({
         <div className="scrollable-content">
           <Divider />
           <Row justify={"space-evenly"}>
-            <Col span={6}>
+            <Col span={8}>
               <p>ルール番号</p>
             </Col>
           </Row>
@@ -188,7 +188,7 @@ export const Config = ({
           </Row>
           <Divider />
           <Row justify={"space-evenly"}>
-            <Col span={6}>
+            <Col span={8}>
               <p>初期値</p>
             </Col>
             <Col span={24}>
@@ -197,7 +197,7 @@ export const Config = ({
           </Row>
           <Divider />
           <Row justify={"space-evenly"}>
-            <Col span={6}>
+            <Col span={8}>
               <p>色補正</p>
             </Col>
             <Col span={24}>
@@ -210,7 +210,7 @@ export const Config = ({
                 {isCorrect && (
                   <>
                     <div style={{ marginTop: "1vw" }}>
-                      <Text style={{ marginRight: "0.3vw" }}>最低値</Text>
+                      <Text style={{ marginRight: "4%" }}>最低値</Text>
                       <InputNumber
                         min={0.3}
                         max={1}
@@ -225,6 +225,7 @@ export const Config = ({
                       onChange={onChange}
                       value={typeof inputValue === "number" ? inputValue : 0}
                       step={0.01}
+                      style={{ marginLeft: "4%" }}
                     />
                   </>
                 )}
@@ -233,7 +234,7 @@ export const Config = ({
           </Row>
           <Divider />
           <Row justify={"space-evenly"}>
-            <Col span={6}>
+            <Col span={8}>
               <p>詳細表示</p>
             </Col>
             <Col span={24}>

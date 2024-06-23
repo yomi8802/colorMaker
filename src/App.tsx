@@ -109,8 +109,7 @@ const App = () => {
               </Flex>
 
               <Row justify={"space-evenly"}>
-                <Col span={4} />
-                <Col span={4}>
+                <Col span={8} offset={6}>
                   <Flex
                     style={{
                       height: "100%",
@@ -171,8 +170,7 @@ const App = () => {
               </Flex>
 
               <Row justify={"space-evenly"}>
-                <Col span={4} />
-                <Col span={4}>
+              <Col span={8} offset={6}>
                   <Flex
                     style={{
                       height: "100%",
