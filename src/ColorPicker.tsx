@@ -1,36 +1,30 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { InputNumberProps } from "antd";
 import { InputNumber, Slider } from "antd";
 import { Stage, Layer, Rect } from "react-konva";
-import { HSV2RGB } from "./ColorCalculation";
+import { HSV2RGB } from "./CellRender";
+import { Hsv } from "./CellRender";
 
 //ColorButtonから
 type Props = {
-  initialValue: number;
   handleSliderChange: (newValue: number) => void; //ColorButtonにスライダーの値を送る関数
+  baseColor: Hsv;
 };
 
 const ColorPicker = (props: Props) => {
-  //テキストからスライダーを操作する用の変数
-  const [inputValue, setInputValue] = useState(props.initialValue);
-  const [sampleColor, setSampleColor] = useState({ r: 0, g: 0, b: 0 });
-
-  //モーダルキャンセル時のスライダー初期化用
-  useEffect(() => {
-    setInputValue(props.initialValue);
-  }, [props.initialValue]);
+  const [inputValue, setInputValue] = useState(props.baseColor.h);
+  const [sampleRGBColor, setSampleColor] = useState(
+    HSV2RGB({ h: props.baseColor.h, s: 1, v: 1 })
+  );
 
   //スライダー操作時
   const onChange: InputNumberProps["onChange"] = (newValue) => {
     setInputValue(newValue as number);
     props.handleSliderChange(newValue as number);
+    setSampleColor(HSV2RGB({ h: newValue as number, s: 1, v: 1 }));
   };
 
-  useEffect(() => {
-    setSampleColor(HSV2RGB({ h: inputValue, s: 1, v: 1 }));
-  }, [inputValue]);
-
-  const colorStyle = `rgb(${sampleColor.r}, ${sampleColor.g}, ${sampleColor.b})`;
+  const colorStyle = `rgb(${sampleRGBColor.r}, ${sampleRGBColor.g}, ${sampleRGBColor.b})`;
 
   return (
     <div id="overlay">
@@ -54,7 +48,13 @@ const ColorPicker = (props: Props) => {
           value={typeof inputValue === "number" ? inputValue : 0}
         />
         <a style={{ paddingRight: "0.3vw" }}>H:</a>
-        <InputNumber min={0} max={360} value={inputValue} onChange={onChange} />
+        <InputNumber
+          min={0}
+          max={360}
+          value={Math.round(inputValue)}
+          onChange={onChange}
+        />
+        <a>{props.baseColor.h}</a>
       </div>
     </div>
   );
