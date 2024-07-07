@@ -1,8 +1,18 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Config } from "./VFCA";
-import { Rgb } from "./CellRender";
-import { Col, Divider, Flex, Row, Space, Typography } from "antd";
+import {
+  Button,
+  Col,
+  Divider,
+  Flex,
+  Row,
+  Space,
+  Tooltip,
+  Typography,
+} from "antd";
+import { DownloadOutlined } from "@ant-design/icons";
 import { Layer, Rect, Stage } from "react-konva";
+import Konva from "konva";
 
 type CAProp = {
   config: Config;
@@ -19,9 +29,11 @@ export const CA = ({ config }: CAProp) => {
     u: new Array(q).fill(0),
     color: { r: 0, g: 0, b: 0 },
   };
-  const [cellData, setCellData] = useState(initialCellData);
+  let cellData = initialCellData;
+  const [clickedCellNum, setClickedCellNum] = useState({ i: 0, j: 0 });
   const ruleNum = Array.from({ length: q ** 3 }).map((_, i) => {
-    const num = i >= rule.length ? 0 : Number(rule[i]);
+    const reversedIndex = rule.length - 1 - i;
+    const num = reversedIndex >= 0 ? Number(rule[reversedIndex]) : 0;
     return num;
   });
   const ruleArray = Array.from({ length: q ** 3 }).map((_, i) => {
@@ -30,6 +42,7 @@ export const CA = ({ config }: CAProp) => {
     return tempArray;
   });
   const cellSize = 15;
+  const stageRef = useRef<Konva.Stage>(null);
 
   //Uの初期値設定
   const U: number[][][] = [];
@@ -93,33 +106,70 @@ export const CA = ({ config }: CAProp) => {
     }
   }
 
-  const handleClick = (id: string, color: Rgb) => {
+  const handleClick = (id: string) => {
     const parts = id.split("-");
     const i = parseInt(parts[0], 10);
     const j = parseInt(parts[1], 10);
 
-    setCellData({ i: i + 1, j: j + 1, u: U[i][j], color: color });
+    setClickedCellNum({ i:i, j:j });
+  };
+
+  cellData = {
+    i: clickedCellNum.i,
+    j: clickedCellNum.j,
+    u: U[clickedCellNum.i][clickedCellNum.j],
+    color: rects[clickedCellNum.i * n + clickedCellNum.j].color,
+  };
+
+  const handleExport = () => {
+    if (stageRef.current) {
+      const uri = stageRef.current.toDataURL();
+      const link = document.createElement("a");
+      link.href = uri;
+      link.download = "CA.png";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      console.error("Stage reference is null");
+    }
   };
 
   return (
     <>
       <Flex justify="center" align="center" vertical>
-        <Stage width={cellSize * (n + 1)} height={cellSize * (n + 1)}>
-          <Layer>
-            {rects.map((rect) => (
-              <Rect
-                key={rect.id}
-                x={rect.x}
-                y={rect.y}
-                width={rect.width}
-                height={rect.height}
-                fill={rect.fill}
-                onClick={() => handleClick(rect.id, rect.color)}
-                onTouchStart={() => handleClick(rect.id, rect.color)}
+        <div>
+          <Stage
+            width={cellSize * (n + 1)}
+            height={cellSize * (n + 1)}
+            ref={stageRef}
+          >
+            <Layer>
+              {rects.map((rect) => (
+                <Rect
+                  key={rect.id}
+                  x={rect.x}
+                  y={rect.y}
+                  width={rect.width}
+                  height={rect.height}
+                  fill={rect.fill}
+                  onClick={() => handleClick(rect.id)}
+                  onTouchStart={() => handleClick(rect.id)}
+                />
+              ))}
+            </Layer>
+          </Stage>
+          <div style={{ textAlign: "right" }}>
+            <Tooltip title="Download">
+              <Button
+                type="default"
+                shape="circle"
+                icon={<DownloadOutlined />}
+                onClick={handleExport}
               />
-            ))}
-          </Layer>
-        </Stage>
+            </Tooltip>
+          </div>
+        </div>
         {rule.length < 30 ? (
           <>
             <a>ルール番号</a>
@@ -153,7 +203,9 @@ export const CA = ({ config }: CAProp) => {
                 <Text>
                   i : {cellData.i} &nbsp;&nbsp; j : {cellData.j}
                 </Text>
-                <Text>U : {cellData.u.map((num) => num.toFixed(2)).join(", ")}</Text>
+                <Text>
+                  U : {cellData.u.map((num) => num.toFixed(2)).join(", ")}
+                </Text>
                 <Text>
                   RGB :{" "}
                   {`${cellData.color.r.toFixed(2)}, ${cellData.color.g.toFixed(2)}, ${cellData.color.b.toFixed(2)}`}
