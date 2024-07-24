@@ -21,7 +21,7 @@ type CAProp = {
 const { Text } = Typography;
 
 export const CA = ({ config }: CAProp) => {
-  const { q, n, rule, firstRow, cellRender, showDetail } = config;
+  const { q, n, rule, firstRow, caMode, cellRender, showDetail } = config;
   const [expanded, setExpanded] = useState(false);
   const initialCellData = {
     i: 0,
@@ -45,8 +45,23 @@ export const CA = ({ config }: CAProp) => {
   const stageRef = useRef<Konva.Stage>(null);
 
   //Uの初期値設定
+  let tempFirstRow = firstRow;
+
+  if (caMode === 2) {
+    tempFirstRow = tempFirstRow.map((currentCell) => {
+      const maxIndex = currentCell.reduce(
+        (maxIndex, currentValue, currentIndex, array) => {
+          return currentValue > array[maxIndex] ? currentIndex : maxIndex;
+        },
+        0
+      );
+
+      return currentCell.map((_, index) => (index === maxIndex ? 1 : 0));
+    });
+  }
+
   const U: number[][][] = [];
-  U.push(firstRow);
+  U.push(tempFirstRow);
 
   //時間ステップ
   for (let i = 0; i < n - 1; i++) {
@@ -111,7 +126,7 @@ export const CA = ({ config }: CAProp) => {
     const i = parseInt(parts[0], 10);
     const j = parseInt(parts[1], 10);
 
-    setClickedCellNum({ i:i, j:j });
+    setClickedCellNum({ i: i, j: j });
   };
 
   cellData = {

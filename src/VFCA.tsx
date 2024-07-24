@@ -18,6 +18,7 @@ export type Config = {
   showDetail: boolean;
   minV: number;
   k: number;
+  caMode: number;
   completionType: number;
   cellRender: (state: number[]) => Rgb;
 };
@@ -34,6 +35,7 @@ export const VFCA = () => {
     showDetail: false,
     minV: 0,
     k: 1,
+    caMode: 1,
     completionType: 1,
     cellRender: (state: number[]) => CellRender(initialConfig)(state),
   };

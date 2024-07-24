@@ -70,7 +70,7 @@ export const RGB2HSV = (rgb: Rgb) => {
 };
 
 //状態値から色を計算する関数
-export const CellRender = ({ k, baseColor, completionType }: Config) => {
+export const CellRender = ({ q, k, baseColor, completionType }: Config) => {
   return (state: number[]) => {
     let rgbColor = { r: 0, g: 0, b: 0 };
     switch (completionType) {
@@ -87,6 +87,24 @@ export const CellRender = ({ k, baseColor, completionType }: Config) => {
         break;
       }
       case 2: {
+        const tempRgbColor = state.reduce<Rgb>(
+          (acc, u, i) => {
+            acc.r += u * baseColor[i].r / 255;
+            acc.g += u * baseColor[i].g / 255;
+            acc.b += u * baseColor[i].b / 255;
+            return acc;
+          },
+          { r: 0, g: 0, b: 0 }
+        );
+        const hsvColor = RGB2HSV(tempRgbColor);
+        const borderArray = Array.from({ length: q }).map((_, i) => {
+          return i === 0 ? 0.5 : 0.5 / (q - 1);
+        });
+        hsvColor.v = Math.max(Math.min(Variance(state) / Variance(borderArray), 1), 0);
+        rgbColor = HSV2RGB(hsvColor);
+        break;
+      }
+      case 3: {
         rgbColor = state.reduce<Rgb>(
           (acc, u, i) => {
             acc.r += (Math.exp(k * (u - 1) / u) * baseColor[i].r);
@@ -96,7 +114,6 @@ export const CellRender = ({ k, baseColor, completionType }: Config) => {
           },
           { r: 0, g: 0, b: 0 }
         );
-
         break;
       }
     }
@@ -105,15 +122,15 @@ export const CellRender = ({ k, baseColor, completionType }: Config) => {
 };
 
 //分散計算
-//const Variance = (arr: number[]) => {
-//  if (arr.length === 0) {
-//    throw new Error("配列が空です。");
-//  }
-//
-//  const mean = arr.reduce((sum, value) => sum + value, 0) / arr.length;
-//  const squaredDiffs = arr.map((value) => (value - mean) ** 2);
-//  const variance =
-//    squaredDiffs.reduce((sum, value) => sum + value, 0) / arr.length;
-//
-//  return variance;
-//};
+const Variance = (arr: number[]) => {
+  if (arr.length === 0) {
+    throw new Error("配列が空です。");
+  }
+
+  const mean = arr.reduce((sum, value) => sum + value, 0) / arr.length;
+  const squaredDiffs = arr.map((value) => (value - mean) ** 2);
+  const variance =
+    squaredDiffs.reduce((sum, value) => sum + value, 0) / arr.length;
+
+  return variance;
+};
