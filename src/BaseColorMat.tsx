@@ -27,11 +27,13 @@ const BaseColorMat = ({ config, cellSize }: Prop) => {
       }
       const color = cellRender(baseArray);
       const colorStyle: string = `rgb(${color.r}, ${color.g}, ${color.b})`;
+      const xPos = i === 0 ? cellSize / 2 + cellSize * i : cellSize / 2 + cellSize * i + cellSize / 10;
+      const yPos = j === 0 ? cellSize / 2 + cellSize * j : cellSize / 2 + cellSize * j + cellSize / 10;
       return (
         <Rect
           fill={colorStyle}
-          x={cellSize / 2 + cellSize * i}
-          y={cellSize / 2 + cellSize * j}
+          x={xPos}
+          y={yPos}
           width={cellSize}
           height={cellSize}
           key={`${i}-${j}`}
