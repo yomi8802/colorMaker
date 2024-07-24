@@ -1,18 +1,16 @@
 import { useState, useRef } from "react";
 import { Config } from "./VFCA";
 import {
-  Button,
   Col,
   Divider,
   Flex,
   Row,
   Space,
-  Tooltip,
   Typography,
 } from "antd";
-import { DownloadOutlined } from "@ant-design/icons";
 import { Layer, Rect, Stage } from "react-konva";
 import Konva from "konva";
+import DLButton from "./DLButton";
 
 type CAProp = {
   config: Config;
@@ -136,20 +134,6 @@ export const CA = ({ config }: CAProp) => {
     color: rects[clickedCellNum.i * n + clickedCellNum.j].color,
   };
 
-  const handleExport = () => {
-    if (stageRef.current) {
-      const uri = stageRef.current.toDataURL();
-      const link = document.createElement("a");
-      link.href = uri;
-      link.download = "CA.png";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } else {
-      console.error("Stage reference is null");
-    }
-  };
-
   return (
     <>
       <Flex justify="center" align="center" vertical>
@@ -174,16 +158,7 @@ export const CA = ({ config }: CAProp) => {
               ))}
             </Layer>
           </Stage>
-          <div style={{ textAlign: "right" }}>
-            <Tooltip title="Download">
-              <Button
-                type="default"
-                shape="circle"
-                icon={<DownloadOutlined />}
-                onClick={handleExport}
-              />
-            </Tooltip>
-          </div>
+          <DLButton fileName="CA" stageRef={stageRef} />
         </div>
         {rule.length < 30 ? (
           <>
