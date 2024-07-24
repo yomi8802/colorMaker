@@ -13,11 +13,18 @@ type Prop = {
 const BaseColorMat = ({ config, cellSize }: Prop) => {
   const { q, cellRender } = config;
   const stageRef = useRef<Konva.Stage>(null);
-  const rows = Array.from({ length: q }).flatMap((_, i) =>
-    Array.from({ length: q }).map((_, j) => {
+  const rows = Array.from({ length: q + 1 }).flatMap((_, i) =>
+    Array.from({ length: q + 1 }).map((_, j) => {
       const baseArray = new Array(q).fill(0);
-      baseArray[i] += 0.5;
-      baseArray[j] += 0.5;
+      if (i === 0) {
+        if (j === 0) return;
+        baseArray[j - 1] = 1;
+      } else if (j === 0) {
+        baseArray[i - 1] = 1;
+      } else {
+        baseArray[i - 1] += 0.5;
+        baseArray[j - 1] += 0.5;
+      }
       const color = cellRender(baseArray);
       const colorStyle: string = `rgb(${color.r}, ${color.g}, ${color.b})`;
       return (
@@ -44,8 +51,8 @@ const BaseColorMat = ({ config, cellSize }: Prop) => {
     >
       <div>
         <Stage
-          width={cellSize * (q + 1)}
-          height={cellSize * (q + 1)}
+          width={cellSize * (q + 2)}
+          height={cellSize * (q + 2)}
           ref={stageRef}
         >
           <Layer>{rows}</Layer>
