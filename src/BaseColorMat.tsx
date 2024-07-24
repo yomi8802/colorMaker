@@ -1,6 +1,9 @@
 import { Layer, Rect, Stage } from "react-konva";
 import { Flex } from "antd";
 import { Config } from "./VFCA";
+import { useRef } from "react";
+import Konva from "konva";
+import DLButton from "./DLButton";
 
 type Prop = {
   config: Config;
@@ -9,6 +12,7 @@ type Prop = {
 
 const BaseColorMat = ({ config, cellSize }: Prop) => {
   const { q, cellRender } = config;
+  const stageRef = useRef<Konva.Stage>(null);
   const rows = Array.from({ length: q }).flatMap((_, i) =>
     Array.from({ length: q }).map((_, j) => {
       const baseArray = new Array(q).fill(0);
@@ -36,10 +40,18 @@ const BaseColorMat = ({ config, cellSize }: Prop) => {
       }}
       justify="space-evenly"
       align="center"
+      vertical
     >
-      <Stage width={cellSize * (q + 1)} height={cellSize * (q + 1)}>
-        <Layer>{rows}</Layer>
-      </Stage>
+      <div>
+        <Stage
+          width={cellSize * (q + 1)}
+          height={cellSize * (q + 1)}
+          ref={stageRef}
+        >
+          <Layer>{rows}</Layer>
+        </Stage>
+        <DLButton fileName="BaseColor" stageRef={stageRef} />
+      </div>
     </Flex>
   );
 };
